@@ -44,7 +44,7 @@ class Users(Resource):
 
     @users.expect(userModel)
     def post(self):
-        '''create a new user'''
+        '''create a new user MODIFIED'''
         #create a new record in the DB
         # return the user and 200
         return ''
