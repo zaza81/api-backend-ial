@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_restplus import Api, Resource, fields
 from flask_sqlalchemy import SQLAlchemy
+import traceback
 
 
 app = Flask(__name__)
@@ -21,18 +22,26 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable = False)
     email = db.Column(db.String(80), unique=True)
 
+    def asDict(self):
+        return {
+            'id': self.id,
+            'username' : self.username,
+            'email': self.email
+        }
+
 db.create_all()
 
 userModel = users.model('userModel', {
-    'username' : fields.String(),
-    'email' : fields.String()
+    'username' : fields.String(required=True),
+    'email' : fields.String(required=True)
     }
 )
 
 
-# manage status codes
+resp = {200: 'Success', 400: 'user already in db', 400: 'Content not allowed', \
+    400: 'Payload too large', 500: 'Server Error'}
+
 # manage responses
-#
 
 @users.route('')
 class Users(Resource):
@@ -42,12 +51,32 @@ class Users(Resource):
     def get(self):
         return 'ciao'
 
-    @users.expect(userModel)
+
+    @users.expect(userModel, validate=True)
+    @users.doc(responses=resp)
     def post(self):
         '''create a new user MODIFIED'''
         #create a new record in the DB
+        try:
+            data = request.get_json()
+            username_request = data.get("username")
+            email_request = data.get("email")
+
+        #checking if user exists
+            if(User.query.filter( (User.username==username_request) | (User.email==email_request)).count() > 0):
+                return 'user already in DB', 400
+
+            u = User(username=username_request, email=email_request)
+            app.logger.info(type(u))
+            db.session.add(u)
+            db.session.commit()
+        except:
+            app.logger.error(traceback.format_exc())
+            return 'Error server side', 500
+
         # return the user and 200
-        return ''
+        return jsonify(u.asDict())
+
     #crete PUT
     #create DELETE
 
