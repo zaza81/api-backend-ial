@@ -80,7 +80,8 @@ class Users(Resource):
     #crete PUT
     #create DELETE
 
-
+def create_app():
+    return app
 
 
 if __name__ == '__main__':
