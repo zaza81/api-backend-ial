@@ -45,12 +45,18 @@ resp = {200: 'Success', 400: 'user already in db', 400: 'Content not allowed', \
 
 @users.route('')
 class Users(Resource):
-
-    #GET all users
     #GET a user based on ID
     def get(self):
-        return 'ciao'
-
+        '''get all users'''
+        users = User.query.all()
+        j = {}
+        j['data'] = []
+        j['metadata'] = {}
+        j['metadata']['n_results'] = User.query.count()
+        j['metadata']['n_page'] = 1
+        for user in users:
+            j['data'].append(user.asDict())
+        return jsonify(j)
 
     @users.expect(userModel, validate=True)
     @users.doc(responses=resp)
@@ -79,6 +85,17 @@ class Users(Resource):
 
     #crete PUT
     #create DELETE
+
+@users.route('/<int:user_id>')
+class UsersId(Resource):
+    def delete(self, user_id):
+        '''deletes a user '''
+        u = User.query.filter_by(id = user_id).first()
+        db.session.delete(u)
+        db.session.commit()
+        return  204
+
+
 
 def create_app():
     return app
