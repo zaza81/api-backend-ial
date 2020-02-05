@@ -1,7 +1,7 @@
 # install libraries
 pip install -r requirements.txt
 
-# runing the app
+# running the app
 python app.py
 
 # running tests
