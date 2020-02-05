@@ -62,7 +62,7 @@ class Users(Resource):
             username_request = data.get("username")
             email_request = data.get("email")
 
-        #checking if user exists
+            #checking if user exists
             if(User.query.filter( (User.username==username_request) | (User.email==email_request)).count() > 0):
                 return 'user already in DB', 400
 
