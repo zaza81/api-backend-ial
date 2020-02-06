@@ -1,8 +1,11 @@
 from flask import json
 from random import randrange
+from app import app
+
+
 
 def test_home(client):
-    r=client.get('/')
+    r = client.get('/')
     assert r.status_code == 200
 
 def test_users_post(client):
@@ -15,6 +18,8 @@ def test_users_post(client):
     assert r.status_code == 200
     assert r.json['id'] is not None
     assert type(r.json['id']) is int
+    global user_id
+    user_id = str(r.json['id'])
     assert r.json['username'] is not None
     assert type(r.json['username']) is str
     assert r.json['username'] == username
@@ -26,4 +31,9 @@ def test_users_post(client):
 
 def test_users_get(client):
     r=client.get('/users')
+    assert r.status_code == 200
+
+
+def test_users_delete(client):
+    r = client.delete("/users/"+user_id)
     assert r.status_code == 200

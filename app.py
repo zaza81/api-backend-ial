@@ -10,12 +10,11 @@ api = Api(app,
        title='The perfect api',
        description='enpoints for class project at ial',
        endpoint='api')
+
 users = api.namespace('users', description ='CRUD operation for users')
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+
 db = SQLAlchemy(app)
-
-
 
 class User(db.Model):
     id= db.Column(db.Integer, primary_key=True)
@@ -32,8 +31,8 @@ class User(db.Model):
 db.create_all()
 
 userModel = users.model('userModel', {
-    'username' : fields.String(required=True),
-    'email' : fields.String(required=True)
+    'username' : fields.String(required=True, validate=True),
+    'email' : fields.String(required=True, validate=True)
     }
 )
 
@@ -54,6 +53,7 @@ class Users(Resource):
         j['metadata'] = {}
         j['metadata']['n_results'] = User.query.count()
         j['metadata']['n_page'] = 1
+
         for user in users:
             j['data'].append(user.asDict())
         return jsonify(j)
@@ -73,18 +73,16 @@ class Users(Resource):
                 return 'user already in DB', 400
 
             u = User(username=username_request, email=email_request)
-            app.logger.info(type(u))
             db.session.add(u)
             db.session.commit()
+            return jsonify(u.asDict())
         except:
             app.logger.error(traceback.format_exc())
             return 'Error server side', 500
 
-        # return the user and 200
-        return jsonify(u.asDict())
+
 
     #crete PUT
-    #create DELETE
 
 @users.route('/<int:user_id>')
 class UsersId(Resource):
@@ -103,5 +101,3 @@ def create_app():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    # write tests
-    # show test coverage
