@@ -18,3 +18,4 @@ zipp==2.1.0
 gunicorn
 pytest-flask
 pytest-cov
+psycopg2

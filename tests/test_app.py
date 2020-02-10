@@ -37,3 +37,5 @@ def test_users_get(client):
 def test_users_delete(client):
     r = client.delete("/users/"+user_id)
     assert r.status_code == 200
+    r = client.delete("/users/999")
+    assert r.status_code == 404

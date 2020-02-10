@@ -12,7 +12,7 @@ api = Api(app,
        endpoint='api')
 
 users = api.namespace('users', description ='CRUD operation for users')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://fquomdafsccwnn:f88e57b335f0a76e981deeceed9ae3b24653a4f1070758f3d9b4be87a7a70079@ec2-54-247-125-38.eu-west-1.compute.amazonaws.com:5432/d6dr18mde9cgog'
 
 db = SQLAlchemy(app)
 
@@ -40,7 +40,6 @@ userModel = users.model('userModel', {
 resp = {200: 'Success', 400: 'user already in db', 400: 'Content not allowed', \
     400: 'Payload too large', 500: 'Server Error'}
 
-# manage responses
 
 @users.route('')
 class Users(Resource):
@@ -86,12 +85,22 @@ class Users(Resource):
 
 @users.route('/<int:user_id>')
 class UsersId(Resource):
+
+    @users.expect(validate=True)
+    @users.doc(responses=resp)
     def delete(self, user_id):
         '''deletes a user '''
-        u = User.query.filter_by(id = user_id).first()
-        db.session.delete(u)
-        db.session.commit()
-        return  204
+        try:
+            u = User.query.filter_by(id = user_id).first()
+            if (u is None):
+                return 'User not found', 404
+            db.session.delete(u)
+            db.session.commit()
+            return  204
+        except:
+            app.logger.error(traceback.format_exc())
+            return 'Error server side', 500
+
 
 
 
