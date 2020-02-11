@@ -36,6 +36,13 @@ userModel = users.model('userModel', {
     }
 )
 
+userModelPut = users.model('userModelPut', {
+    'id' : fields.Integer(required=True, validate=True),
+    'username' : fields.String(required=True, validate=True),
+    'email' : fields.String(required=True, validate=True)
+    }
+)
+
 
 resp = {200: 'Success', 400: 'user already in db', 400: 'Content not allowed', \
     400: 'Payload too large', 500: 'Server Error'}
@@ -60,7 +67,7 @@ class Users(Resource):
     @users.expect(userModel, validate=True)
     @users.doc(responses=resp)
     def post(self):
-        '''create a new user MODIFIED'''
+        '''create a new user'''
         #create a new record in the DB
         try:
             data = request.get_json()
@@ -80,11 +87,44 @@ class Users(Resource):
             return 'Error server side', 500
 
 
+    @users.expect(userModelPut, validate=True)
+    @users.doc(responses=resp)
+    def put(self):
+        '''create a new user'''
+        try:
+            data = request.get_json()
+            id_request = data.get("id")
+            username_request = data.get("username")
+            email_request = data.get("email")
 
-    #crete PUT
+            #checking if user exists
+            u = User.query.filter_by(id = id_request).first()
+            if(u is None):
+                return 'user not in DB', 404
+
+            u.username = username_request
+            u.email = email_request
+            db.session.commit()
+            return jsonify(u.asDict())
+        except:
+            app.logger.error(traceback.format_exc())
+            return 'Error server side', 500
+
 
 @users.route('/<int:user_id>')
 class UsersId(Resource):
+    @users.expect(validate=True)
+    @users.doc(responses=resp)
+    def get(self, user_id):
+        '''gets a user '''
+        try:
+            u = User.query.filter_by(id = user_id).first()
+            if (u is None):
+                return 'User not found', 404
+            return  jsonify(u.asDict())
+        except:
+            app.logger.error(traceback.format_exc())
+            return 'Error server side', 500
 
     @users.expect(validate=True)
     @users.doc(responses=resp)
